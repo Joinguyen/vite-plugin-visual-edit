@@ -2,15 +2,13 @@
 
 A Vite plugin for visual editing of React components. Highlights elements, shows source locations, and enables in-browser content editing with iframe communication support.
 
-
 <p align="center">
-  <img src="./assets/demo1.png" alt="Visual Edit Plugin Demo" width="100%" />
+  <img src="https://raw.githubusercontent.com/Joinguyen/vite-plugin-visual-edit/refs/heads/main/assets/demo1.png" alt="Visual Edit Plugin Demo" width="100%" />
 </p>
 
 <p align="center">
-  <img src="./assets/demo2.png" alt="Visual Edit Plugin Demo" width="100%" />
+  <img src="https://raw.githubusercontent.com/Joinguyen/vite-plugin-visual-edit/refs/heads/main/assets/demo2.png" alt="Visual Edit Plugin Demo" width="100%" />
 </p>
-
 
 ## Features
 
