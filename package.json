@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-visual-edit",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A Vite plugin for visual editing of React components. Highlights elements, shows source locations, and enables in-browser content editing with iframe communication support.",
   "type": "module",
   "main": "./dist/index.cjs",
