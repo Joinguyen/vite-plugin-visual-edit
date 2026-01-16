@@ -33,16 +33,16 @@
     "hot-reload",
     "babel"
   ],
-  "author": "",
+  "author": "Joi <joi.nguyen@metacrew.vn>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git+https://github.com/Joinguyen/vite-plugin-visual-edit.git"
   },
   "bugs": {
-    "url": ""
+    "url": "https://github.com/Joinguyen/vite-plugin-visual-edit/issues"
   },
-  "homepage": "",
+  "homepage": "https://github.com/Joinguyen/vite-plugin-visual-edit#readme",
   "peerDependencies": {
     "vite": ">=4.0.0",
     "@vitejs/plugin-react": ">=4.0.0"
