@@ -15,7 +15,7 @@ export function babelPluginVisualEdit({ types }: { types: typeof t }): PluginObj
   return {
     name: 'visual-edit-source-location',
     visitor: {
-      Program(path, state) {
+      Program(_path, state) {
         const filename = state.filename || '';
         const normalizedPath = filename.replace(/\\/g, '/');
 
@@ -69,7 +69,7 @@ export function babelPluginVisualEdit({ types }: { types: typeof t }): PluginObj
           const sourceLocation = `${filenameRelative}:${loc.line}:${loc.column}`;
           const hasDynamicContent = checkForDynamicContent(path, types);
 
-          (path.node as Record<symbol, boolean>)[DYNAMIC_CONTENT_SYMBOL] = hasDynamicContent;
+          (path.node as unknown as Record<symbol, boolean>)[DYNAMIC_CONTENT_SYMBOL] = hasDynamicContent;
 
           openingElement.attributes.push(
             types.jsxAttribute(
@@ -109,7 +109,7 @@ function checkForDynamicContent(
     }
 
     if (types.isJSXElement(child)) {
-      if ((child as Record<symbol, boolean>)[DYNAMIC_CONTENT_SYMBOL]) {
+      if ((child as unknown as Record<symbol, boolean>)[DYNAMIC_CONTENT_SYMBOL]) {
         return true;
       }
     }
@@ -143,7 +143,7 @@ function checkFragmentForDynamicContent(
     }
 
     if (types.isJSXElement(child)) {
-      if ((child as Record<symbol, boolean>)[DYNAMIC_CONTENT_SYMBOL]) {
+      if ((child as unknown as Record<symbol, boolean>)[DYNAMIC_CONTENT_SYMBOL]) {
         return true;
       }
     }
