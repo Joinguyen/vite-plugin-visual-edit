@@ -1,0 +1,207 @@
+import type { VisualEditConfig } from './types';
+
+/**
+ * Generates the client-side JavaScript code that will be injected into the HTML.
+ * This code handles hover highlighting, click forms, and postMessage communication.
+ */
+export function generateClientScript(config: VisualEditConfig): string {
+  return `
+<script type="module">
+(function(){
+  if(typeof window==='undefined')return;
+  
+  const CONFIG = ${JSON.stringify(config)};
+  
+  let enabled = CONFIG.defaultEnabled;
+  const STORAGE_KEY = 'visual-edit-enabled';
+  
+  if (CONFIG.persistState) {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved !== null) enabled = saved === 'true';
+    } catch(e) {}
+  }
+  
+  const HC=CONFIG.colorHover,SC=CONFIG.colorSelected,SB=CONFIG.colorSubmit,LC='#fff';
+  let aH=[],aL=[],cL=null,sL=null,sH=[],sLb=[],aF=null,cE=null,iS=false,aSB=null,sT=null,mH=null,init=false;
+  
+  function cHl(el,sel=false){
+    const r=el.getBoundingClientRect(),sx=scrollX,sy=scrollY,c=sel?SC:HC;
+    const h=document.createElement('div');
+    h.className=sel?'ve-hs':'ve-h';
+    h.style.cssText=\`position:absolute;top:\${r.top+sy}px;left:\${r.left+sx}px;width:\${r.width}px;height:\${r.height}px;border:2px solid \${c};background:\${sel?'rgba(16,185,129,.1)':'rgba(59,130,246,.1)'};pointer-events:none;z-index:\${sel?99998:99999};box-sizing:border-box\`;
+    document.body.appendChild(h);
+    sel?sH.push(h):aH.push(h);
+    return{r,sx,sy};
+  }
+  
+  function cLb(el,r,sx,sy,sel=false){
+    const l=document.createElement('div');
+    l.className=sel?'ve-ls':'ve-l';
+    l.textContent=el.tagName.toLowerCase();
+    l.style.cssText=\`position:absolute;top:\${r.top<20?r.top+sy+2:r.top+sy-20}px;left:\${r.left+sx}px;background:\${sel?SC:HC};color:\${LC};padding:2px 6px;font-size:11px;font-family:ui-monospace,monospace;font-weight:500;border-radius:\${r.top<20?'0 0 3px 3px':'3px 3px 0 0'};pointer-events:none;z-index:\${sel?99999:100000};white-space:nowrap\`;
+    document.body.appendChild(l);
+    sel?sLb.push(l):aL.push(l);
+  }
+  
+  function isIF(){try{return self!==top}catch(e){return true}}
+  
+  function setL(l){
+    iS=l;if(!aSB)return;
+    if(l){
+      aSB.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin"><circle cx="12" cy="12" r="10" stroke-opacity=".25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>';
+      aSB.disabled=true;aSB.style.cursor='not-allowed';
+      if(!document.getElementById('ve-sp')){const s=document.createElement('style');s.id='ve-sp';s.textContent='@keyframes ve-spin{to{transform:rotate(360deg)}}.ve-f .spin{animation:ve-spin 1s linear infinite}';document.head.appendChild(s);}
+    }else{
+      aSB.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>';
+      aSB.disabled=false;aSB.style.cursor='pointer';aSB.style.background=SB;
+    }
+  }
+  
+  function clnL(){if(mH){window.removeEventListener('message',mH);mH=null}if(sT){clearTimeout(sT);sT=null}}
+  function clsF(){clnL();iS=false;aSB=null;if(aF){aF.remove();aF=null}sH.forEach(h=>h.remove());sLb.forEach(l=>l.remove());sH=[];sLb=[];sL=null;cE=null}
+  function clrH(){aH.forEach(h=>h.remove());aL.forEach(l=>l.remove());aH=[];aL=[];cL=null}
+  function clrAll(){clsF();clrH()}
+  
+  function sub(v){
+    const d={sourceLocation:sL,content:v,element:cE?.tagName.toLowerCase()||null};
+    console.log('[VisualEdit]',d);setL(true);clnL();
+    if(isIF()){
+      try{
+        mH=(e)=>{if(!mH||!e.data||e.data.type!==CONFIG.messageTypeDataResponse)return;const o=aF!==null;clnL();if(o)setL(false);if(e.data.success&&o)clsF()};
+        window.addEventListener('message',mH);
+        sT=setTimeout(()=>{if(!sT)return;clnL();if(aF)setL(false)},CONFIG.submitTimeout);
+        parent.postMessage({type:CONFIG.messageTypeDataRequest,data:d},'*');
+      }catch(e){clnL();setL(false)}
+    }else{window.dispatchEvent(new CustomEvent(CONFIG.messageTypeDataRequest,{detail:d}));setL(false);clsF()}
+  }
+  
+  function cIF(el){
+    const r=el.getBoundingClientRect(),sx=scrollX,sy=scrollY;
+    const f=document.createElement('div');f.className='ve-f';
+    f.style.cssText=\`position:absolute;top:\${r.bottom+sy+8}px;left:\${r.left+sx}px;min-width:300px;max-width:400px;background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.05);z-index:100001;display:flex;align-items:center;padding:8px 12px;gap:8px;font-family:-apple-system,sans-serif\`;
+    const bb=document.createElement('button');bb.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
+    bb.style.cssText='background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;display:flex;border-radius:4px';bb.onclick=clsF;
+    const ip=document.createElement('input');ip.type='text';ip.placeholder='What to change?';
+    ip.style.cssText='flex:1;border:none;outline:none;font-size:14px;color:#374151;background:transparent';
+    const sb=document.createElement('button');
+    sb.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>';
+    sb.disabled=true;sb.style.cssText='background:#86efac;border:none;cursor:not-allowed;padding:6px;color:white;display:flex;border-radius:6px';
+    aSB=sb;
+    const upd=()=>{if(iS)return;const h=ip.value.trim().length>0;sb.disabled=!h;sb.style.background=h?SB:'#86efac';sb.style.cursor=h?'pointer':'not-allowed'};
+    ip.oninput=upd;ip.onkeydown=(e)=>{if(e.key==='Enter'&&ip.value.trim()&&!iS)sub(ip.value.trim());else if(e.key==='Escape')clsF()};
+    sb.onclick=()=>{if(ip.value.trim()&&!iS)sub(ip.value.trim())};
+    const cb=document.createElement('button');cb.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+    cb.style.cssText='background:none;border:none;cursor:pointer;padding:4px;color:#9ca3af;display:flex;border-radius:4px';cb.onclick=clsF;
+    f.append(bb,ip,sb,cb);document.body.appendChild(f);aF=f;
+    f.addEventListener('mouseenter',clrH);f.addEventListener('click',e=>e.stopPropagation());
+    setTimeout(()=>ip.focus(),50);
+    const fr=f.getBoundingClientRect();
+    if(fr.right>innerWidth)f.style.left=\`\${innerWidth-fr.width-16}px\`;
+    if(fr.bottom>innerHeight)f.style.top=\`\${r.top+sy-fr.height-8}px\`;
+  }
+  
+  function cSH(loc){sH.forEach(h=>h.remove());sLb.forEach(l=>l.remove());sH=[];sLb=[];document.querySelectorAll(\`[data-source-location="\${loc}"]\`).forEach(e=>{const{r,sx,sy}=cHl(e,true);cLb(e,r,sx,sy,true)})}
+  function hlE(loc){if(cL===loc)return;aH.forEach(h=>h.remove());aL.forEach(l=>l.remove());aH=[];aL=[];cL=loc;if(loc===sL)return;document.querySelectorAll(\`[data-source-location="\${loc}"]\`).forEach(e=>{const{r,sx,sy}=cHl(e,false);cLb(e,r,sx,sy,false)})}
+  
+  function mO(e){if(!enabled)return;const t=e.target;if(t.closest('.ve-h,.ve-hs,.ve-l,.ve-ls,.ve-f,.ve-badge'))return;const el=t.closest('[data-source-location]');if(el)hlE(el.getAttribute('data-source-location'))}
+  function mOut(e){if(!enabled)return;const rt=e.relatedTarget;if(rt){if(rt.closest?.('.ve-h,.ve-hs,.ve-l,.ve-ls,.ve-f,.ve-badge'))return;const el=rt.closest?.('[data-source-location]');if(el&&el.getAttribute('data-source-location')===cL)return}clrH()}
+  function clk(e){if(!enabled)return;const t=e.target;if(t.closest('.ve-f,.ve-badge'))return;const el=t.closest('[data-source-location]');if(el){const loc=el.getAttribute('data-source-location');if(loc===sL)return;e.preventDefault();e.stopPropagation();if(aF){aF.remove();aF=null}sL=loc;cE=el;clrH();cSH(loc);cIF(el)}else if(sL)clsF()}
+  
+  function upd(){
+    if(!enabled)return;
+    if(cL){const els=document.querySelectorAll(\`[data-source-location="\${cL}"]\`);aH.forEach((h,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();h.style.top=\`\${r.top+scrollY}px\`;h.style.left=\`\${r.left+scrollX}px\`;h.style.width=\`\${r.width}px\`;h.style.height=\`\${r.height}px\`});aL.forEach((l,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();l.style.top=r.top<20?\`\${r.top+scrollY+2}px\`:\`\${r.top+scrollY-20}px\`;l.style.left=\`\${r.left+scrollX}px\`})}
+    if(sL){const els=document.querySelectorAll(\`[data-source-location="\${sL}"]\`);sH.forEach((h,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();h.style.top=\`\${r.top+scrollY}px\`;h.style.left=\`\${r.left+scrollX}px\`;h.style.width=\`\${r.width}px\`;h.style.height=\`\${r.height}px\`});sLb.forEach((l,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();l.style.top=r.top<20?\`\${r.top+scrollY+2}px\`:\`\${r.top+scrollY-20}px\`;l.style.left=\`\${r.left+scrollX}px\`});if(aF&&cE){const r=cE.getBoundingClientRect(),fr=aF.getBoundingClientRect();let t=r.bottom+scrollY+8;if(r.bottom+fr.height+8>innerHeight)t=r.top+scrollY-fr.height-8;aF.style.top=\`\${t}px\`;aF.style.left=\`\${Math.min(r.left+scrollX,innerWidth-fr.width-16)}px\`}}
+  }
+  
+  function setEnabled(val) {
+    enabled = val;
+    if (CONFIG.persistState) {
+      try { localStorage.setItem(STORAGE_KEY, String(val)); } catch(e) {}
+    }
+    
+    const css = document.getElementById('ve-css');
+    if (val) {
+      if (!css) {
+        const s = document.createElement('style');
+        s.id = 've-css';
+        s.textContent = 'body,body *{cursor:crosshair}.ve-f,.ve-f *{cursor:auto!important}.ve-f input{cursor:text!important}.ve-f button{cursor:pointer!important}.ve-f button:disabled{cursor:not-allowed!important}.ve-badge{cursor:pointer!important}';
+        document.head.appendChild(s);
+      }
+    } else {
+      if (css) css.remove();
+      clrAll();
+    }
+    
+    if (CONFIG.showBadge) updateBadge();
+    console.log('[VisualEdit]', val ? 'Enabled' : 'Disabled');
+  }
+  
+  let badge = null;
+  function updateBadge() {
+    if (!CONFIG.showBadge) return;
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.className = 've-badge';
+      badge.style.cssText = 'position:fixed;bottom:16px;right:16px;z-index:100002;padding:8px 12px;border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;box-shadow:0 2px 10px rgba(0,0,0,.15)';
+      badge.onclick = () => setEnabled(!enabled);
+      badge.title = 'Toggle Visual Edit (Ctrl+Shift+E)';
+      document.body.appendChild(badge);
+    }
+    badge.style.background = enabled ? SB : '#6b7280';
+    badge.style.color = '#fff';
+    badge.textContent = enabled ? '✏️ Edit ON' : '👁️ Edit OFF';
+  }
+  
+  function onKeyDown(e) {
+    if (!CONFIG.enableKeyboardShortcut) return;
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'e') {
+      e.preventDefault();
+      setEnabled(!enabled);
+    }
+  }
+  
+  function onMessage(e) {
+    if (e.data && e.data.type === CONFIG.messageTypeToggle) {
+      if (typeof e.data.enabled === 'boolean') {
+        setEnabled(e.data.enabled);
+      } else {
+        setEnabled(!enabled);
+      }
+    }
+  }
+  
+  function initVE(){
+    if(init)return;init=true;
+    
+    document.addEventListener('keydown', onKeyDown);
+    window.addEventListener('message', onMessage);
+    document.addEventListener('mouseover',mO,true);
+    document.addEventListener('mouseout',mOut,true);
+    document.addEventListener('click',clk,true);
+    window.addEventListener('scroll',upd,true);
+    window.addEventListener('resize',upd);
+    
+    if (enabled) {
+      const s = document.createElement('style');
+      s.id = 've-css';
+      s.textContent = 'body,body *{cursor:crosshair}.ve-f,.ve-f *{cursor:auto!important}.ve-f input{cursor:text!important}.ve-f button{cursor:pointer!important}.ve-f button:disabled{cursor:not-allowed!important}.ve-badge{cursor:pointer!important}';
+      document.head.appendChild(s);
+    }
+    
+    if (CONFIG.showBadge) updateBadge();
+    console.log('[VisualEdit] Ready -', enabled ? 'Enabled' : 'Disabled');
+  }
+  
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initVE,{once:true});else initVE();
+  
+  window.__VISUAL_EDIT__ = {
+    enable: () => setEnabled(true),
+    disable: () => setEnabled(false),
+    toggle: () => setEnabled(!enabled),
+    isEnabled: () => enabled,
+    config: CONFIG
+  };
+})();
+</script>`;
+}
