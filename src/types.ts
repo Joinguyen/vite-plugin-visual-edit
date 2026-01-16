@@ -1,4 +1,11 @@
-import type { PluginOption } from 'vite';
+export type VisualEditLanguage = 'en' | 'ko' | 'vn' | 'jp' | 'ch';
+
+export interface VisualEditTranslation {
+  /**
+   * Placeholder text for the input field
+   */
+  placeholder: string;
+}
 
 /**
  * Configuration options for the Visual Edit plugin
@@ -53,6 +60,12 @@ export interface VisualEditOptions {
   messageTypeToggle?: string;
 
   /**
+   * postMessage type for language change command
+   * @default 'visual-edit-language'
+   */
+  messageTypeLanguage?: string;
+
+  /**
    * Default toggle state on first load
    * @default false
    */
@@ -86,7 +99,20 @@ export interface VisualEditOptions {
    * @default 'data-dynamic-content'
    */
   attributeDynamicContent?: string;
+
+  /**
+   * Current language for the editor interface
+   * @default 'en'
+   */
+  language?: VisualEditLanguage;
+
+  /**
+   * Custom translations or overrides
+   */
+  translations?: Partial<Record<VisualEditLanguage, Partial<VisualEditTranslation>>>;
 }
+
+// ... (skipping request/response types as they are unchanged)
 
 /**
  * Data sent via postMessage when user submits a change
@@ -134,12 +160,21 @@ export interface VisualEditToggleMessage {
 }
 
 /**
+ * postMessage payload for language change commands
+ */
+export interface VisualEditLanguageMessage {
+  type: string;
+  language: VisualEditLanguage;
+}
+
+/**
  * Global API exposed on window.__VISUAL_EDIT__
  */
 export interface VisualEditAPI {
   enable: () => void;
   disable: () => void;
   toggle: () => void;
+  setLanguage: (lang: VisualEditLanguage) => void;
   isEnabled: () => boolean;
   config: VisualEditConfig;
 }
@@ -155,12 +190,15 @@ export interface VisualEditConfig {
   messageTypeDataRequest: string;
   messageTypeDataResponse: string;
   messageTypeToggle: string;
+  messageTypeLanguage: string;
   defaultEnabled: boolean;
   colorHover: string;
   colorSelected: string;
   colorSubmit: string;
   attributeSourceLocation: string;
   attributeDynamicContent: string;
+  language: VisualEditLanguage;
+  translations: Record<VisualEditLanguage, VisualEditTranslation>;
 }
 
 /**
@@ -177,7 +215,4 @@ export interface BabelPluginState {
   set: (key: string, value: string) => void;
 }
 
-/**
- * Return type of the visualEdit function
- */
-export type VisualEditPluginReturn = PluginOption[];
+

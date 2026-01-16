@@ -85,7 +85,8 @@ export function generateClientScript(config: VisualEditConfig): string {
     f.style.cssText=\`position:absolute;top:\${r.bottom+sy+8}px;left:\${r.left+sx}px;min-width:300px;max-width:400px;background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.05);z-index:100001;display:flex;align-items:center;padding:8px 12px;gap:8px;font-family:-apple-system,sans-serif\`;
     const bb=document.createElement('button');bb.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>';
     bb.style.cssText='background:none;border:none;cursor:pointer;padding:4px;color:#6b7280;display:flex;border-radius:4px';bb.onclick=clsF;
-    const ip=document.createElement('input');ip.type='text';ip.placeholder='What to change?';
+    const t = CONFIG.translations[CONFIG.language] || CONFIG.translations['en'];
+    const ip=document.createElement('input');ip.type='text';ip.placeholder=t.placeholder;
     ip.style.cssText='flex:1;border:none;outline:none;font-size:14px;color:#374151;background:transparent';
     const sb=document.createElement('button');
     sb.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>';
@@ -139,6 +140,17 @@ export function generateClientScript(config: VisualEditConfig): string {
     if (CONFIG.showBadge) updateBadge();
     console.log('[VisualEdit]', val ? 'Enabled' : 'Disabled');
   }
+
+  function setLanguage(lang) {
+    if (!CONFIG.translations[lang]) return;
+    CONFIG.language = lang;
+    if (aF) {
+      const t = CONFIG.translations[lang];
+      const ip = aF.querySelector('input');
+      if (ip) ip.placeholder = t.placeholder;
+    }
+    console.log('[VisualEdit] Language set to:', lang);
+  }
   
   let badge = null;
   function updateBadge() {
@@ -171,6 +183,10 @@ export function generateClientScript(config: VisualEditConfig): string {
       } else {
         setEnabled(!enabled);
       }
+    } else if (e.data && e.data.type === CONFIG.messageTypeLanguage) {
+      if (e.data.language) {
+        setLanguage(e.data.language);
+      }
     }
   }
   
@@ -202,6 +218,7 @@ export function generateClientScript(config: VisualEditConfig): string {
     enable: () => setEnabled(true),
     disable: () => setEnabled(false),
     toggle: () => setEnabled(!enabled),
+    setLanguage: (lang) => setLanguage(lang),
     isEnabled: () => enabled,
     config: CONFIG
   };

@@ -20,12 +20,22 @@ import type {
   VisualEditResponseMessage,
   VisualEditToggleMessage,
   VisualEditAPI,
+  VisualEditLanguage,
+  VisualEditTranslation,
 } from './types';
+
+const DEFAULT_TRANSLATIONS: Record<VisualEditLanguage, VisualEditTranslation> = {
+  en: { placeholder: 'What to change?' },
+  ko: { placeholder: '무엇을 변경하시겠습니까?' },
+  vn: { placeholder: 'Bạn muốn thay đổi gì?' },
+  jp: { placeholder: '何を変更しますか？' },
+  ch: { placeholder: '你想改什么？' },
+};
 
 /**
  * Default options for the Visual Edit plugin
  */
-const DEFAULT_OPTIONS: Required<Omit<VisualEditOptions, 'exclude'>> & {
+const DEFAULT_OPTIONS: Required<Omit<VisualEditOptions, 'exclude' | 'translations'>> & {
   exclude: RegExp[];
 } = {
   exclude: [/node_modules/, /components\/ui\//],
@@ -36,12 +46,14 @@ const DEFAULT_OPTIONS: Required<Omit<VisualEditOptions, 'exclude'>> & {
   messageTypeDataRequest: 'visual-edit-request',
   messageTypeDataResponse: 'visual-edit-response',
   messageTypeToggle: 'visual-edit-toggle',
+  messageTypeLanguage: 'visual-edit-language',
   defaultEnabled: false,
   colorHover: '#3b82f6',
   colorSelected: '#10b981',
   colorSubmit: '#10b981',
   attributeSourceLocation: 'data-source-location',
   attributeDynamicContent: 'data-dynamic-content',
+  language: 'en',
 };
 
 /**
@@ -72,18 +84,34 @@ export function visualEdit(options: VisualEditOptions = {}): Plugin[] {
     messageTypeDataRequest,
     messageTypeDataResponse,
     messageTypeToggle,
+    messageTypeLanguage,
     defaultEnabled,
     colorHover,
     colorSelected,
     colorSubmit,
     attributeSourceLocation,
     attributeDynamicContent,
+    language,
+    translations: userTranslations,
   } = resolvedOptions;
 
   let isDev = false;
   
   // Create filter for transformation
   const filter = createFilter(null, exclude);
+
+  // Merge translations
+  const translations = { ...DEFAULT_TRANSLATIONS };
+  if (userTranslations) {
+    (Object.keys(userTranslations) as VisualEditLanguage[]).forEach(lang => {
+      if (userTranslations[lang]) {
+        translations[lang] = {
+          ...translations[lang],
+          ...userTranslations[lang]
+        } as VisualEditTranslation;
+      }
+    });
+  }
 
   // Runtime configuration object
   const config: VisualEditConfig = {
@@ -94,12 +122,15 @@ export function visualEdit(options: VisualEditOptions = {}): Plugin[] {
     messageTypeDataRequest,
     messageTypeDataResponse,
     messageTypeToggle,
+    messageTypeLanguage,
     defaultEnabled,
     colorHover,
     colorSelected,
     colorSubmit,
     attributeSourceLocation,
     attributeDynamicContent,
+    language,
+    translations,
   };
 
   const plugin: Plugin = {

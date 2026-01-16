@@ -80,10 +80,32 @@ export default defineConfig({
       // Customizable attribute names (defaults shown)
       attributeSourceLocation: "data-source-location",
       attributeDynamicContent: "data-dynamic-content",
+
+      // Multi-language support
+      language: "en", // 'en' | 'ko' | 'vn' | 'jp' | 'ch'
+
+      // Custom translations or overrides
+      translations: {
+        vn: {
+          placeholder: "Bạn muốn sửa gì thế?",
+        },
+      },
     }),
   ],
 });
 ```
+
+## Multi-language Support
+
+The plugin comes with built-in translations for:
+
+- English (`en`) - Default
+- Korean (`ko`)
+- Vietnamese (`vn`)
+- Japanese (`jp`)
+- Chinese (`ch`)
+
+You can set the initial language via the `language` option or change it dynamically.
 
 ## How It Works
 
@@ -121,6 +143,15 @@ iframe.contentWindow.postMessage(
 
 // Toggle
 iframe.contentWindow.postMessage({ type: "visual-edit-toggle" }, "*");
+
+// Change Language
+iframe.contentWindow.postMessage(
+  {
+    type: "visual-edit-language",
+    language: "vn", // 'en', 'ko', 'vn', 'jp', 'ch'
+  },
+  "*"
+);
 ```
 
 #### 2. JavaScript API
@@ -129,6 +160,7 @@ iframe.contentWindow.postMessage({ type: "visual-edit-toggle" }, "*");
 window.__VISUAL_EDIT__.enable();
 window.__VISUAL_EDIT__.disable();
 window.__VISUAL_EDIT__.toggle();
+window.__VISUAL_EDIT__.setLanguage("vn");
 window.__VISUAL_EDIT__.isEnabled(); // returns boolean
 ```
 
@@ -202,6 +234,12 @@ interface VisualEditToggleMessage {
   type: string; // 'visual-edit-toggle'
   enabled?: boolean; // undefined = toggle
 }
+
+// Language command
+interface VisualEditLanguageMessage {
+  type: string; // 'visual-edit-language'
+  language: "en" | "ko" | "vn" | "jp" | "ch";
+}
 ```
 
 ## Global API
@@ -213,6 +251,7 @@ interface VisualEditAPI {
   enable(): void;
   disable(): void;
   toggle(): void;
+  setLanguage(lang: string): void;
   isEnabled(): boolean;
   config: VisualEditConfig;
 }
