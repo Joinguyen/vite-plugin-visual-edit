@@ -68,7 +68,7 @@ export function generateClientScript(config: VisualEditConfig): string {
   
   function sub(v){
     const d={sourceLocation:sL,content:v,element:cE?.tagName.toLowerCase()||null};
-    console.log('[VisualEdit]',d);setL(true);clnL();
+    setL(true);clnL();
     if(isIF()){
       try{
         mH=(e)=>{if(!mH||!e.data||e.data.type!==CONFIG.messageTypeDataResponse)return;const o=aF!==null;clnL();if(o)setL(false);if(e.data.success&&o)clsF()};
@@ -138,7 +138,6 @@ export function generateClientScript(config: VisualEditConfig): string {
     }
     
     if (CONFIG.showBadge) updateBadge();
-    console.log('[VisualEdit]', val ? 'Enabled' : 'Disabled');
   }
 
   function setLanguage(lang) {
@@ -149,7 +148,6 @@ export function generateClientScript(config: VisualEditConfig): string {
       const ip = aF.querySelector('input');
       if (ip) ip.placeholder = t.placeholder;
     }
-    console.log('[VisualEdit] Language set to:', lang);
   }
   
   let badge = null;
@@ -209,7 +207,6 @@ export function generateClientScript(config: VisualEditConfig): string {
     }
     
     if (CONFIG.showBadge) updateBadge();
-    console.log('[VisualEdit] Ready -', enabled ? 'Enabled' : 'Disabled');
   }
   
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initVE,{once:true});else initVE();
