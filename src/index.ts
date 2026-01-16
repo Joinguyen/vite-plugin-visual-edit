@@ -8,14 +8,13 @@
  * @packageDocumentation
  */
 
-import type { Plugin, ResolvedConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import { type Plugin, type ResolvedConfig, createFilter } from 'vite';
+import { transformAsync } from '@babel/core';
 import { babelPluginVisualEdit } from './babel-plugin';
 import { generateClientScript } from './client';
 import type {
   VisualEditOptions,
   VisualEditConfig,
-  VisualEditPluginReturn,
   VisualEditRequestData,
   VisualEditRequestMessage,
   VisualEditResponseMessage,
@@ -26,7 +25,7 @@ import type {
 /**
  * Default options for the Visual Edit plugin
  */
-const DEFAULT_OPTIONS: Required<Omit<VisualEditOptions, 'exclude' | 'react'>> & {
+const DEFAULT_OPTIONS: Required<Omit<VisualEditOptions, 'exclude'>> & {
   exclude: RegExp[];
 } = {
   exclude: [/node_modules/, /components\/ui\//],
@@ -55,25 +54,9 @@ const DEFAULT_OPTIONS: Required<Omit<VisualEditOptions, 'exclude' | 'react'>> & 
  * - Only active in development mode
  * 
  * @param options - Configuration options
- * @returns Array of Vite plugins (editor plugin + configured react plugin)
- * 
- * @example
- * ```typescript
- * // vite.config.ts
- * import { defineConfig } from 'vite'
- * import visualEdit from 'vite-plugin-visual-edit'
- * 
- * export default defineConfig({
- *   plugins: [
- *     ...visualEdit({
- *       defaultEnabled: false,
- *       showBadge: true,
- *     }),
- *   ],
- * })
- * ```
+ * @returns Vite plugin
  */
-export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginReturn {
+export function visualEdit(options: VisualEditOptions = {}): Plugin[] {
   const resolvedOptions = {
     ...DEFAULT_OPTIONS,
     ...options,
@@ -82,7 +65,6 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
 
   const {
     exclude,
-    react: reactOptions = {},
     persistState,
     submitTimeout,
     showBadge,
@@ -99,6 +81,9 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
   } = resolvedOptions;
 
   let isDev = false;
+  
+  // Create filter for transformation
+  const filter = createFilter(null, exclude);
 
   // Runtime configuration object
   const config: VisualEditConfig = {
@@ -117,9 +102,9 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
     attributeDynamicContent,
   };
 
-  // Main Vite plugin for injecting the client-side script
-  const editorPlugin: Plugin = {
+  const plugin: Plugin = {
     name: 'vite-plugin-visual-edit',
+    enforce: 'pre', // Run before @vitejs/plugin-react to add attributes before compilation
     
     configResolved(resolvedConfig: ResolvedConfig) {
       isDev = resolvedConfig.mode === 'development' || resolvedConfig.command === 'serve';
@@ -134,21 +119,59 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
       const script = generateClientScript(config);
       return html.replace('</body>', `${script}\n</body>`);
     },
+
+    async transform(code: string, id: string) {
+      // Only transform in development mode
+      if (!isDev) return null;
+      
+      // Filter files (exclude node_modules, etc.)
+      if (!filter(id)) return null;
+      
+      // Only process likely React files
+      if (!/\.(t|j)sx?$/.test(id)) return null;
+
+      try {
+        const result = await transformAsync(code, {
+          filename: id,
+          sourceMaps: true,
+          plugins: [
+            [babelPluginVisualEdit, { 
+              exclude, 
+              attributeSourceLocation, 
+              attributeDynamicContent 
+            }]
+          ],
+          // Minimal parser options to handle JSX and TS
+          parserOpts: {
+            plugins: [
+              'jsx', 
+              'typescript',
+              'importMeta',
+              'classProperties',
+              'numericSeparator',
+              'dynamicImport'
+            ]
+          },
+          configFile: false,
+          babelrc: false
+        });
+
+        if (result?.code) {
+          return {
+            code: result.code,
+            map: result.map
+          };
+        }
+        return null;
+      } catch (e) {
+        // If transformation fails, silently fail and return null (Vite will use original code)
+        // console.warn('[vite-plugin-visual-edit] Failed to transform:', id, e);
+        return null;
+      }
+    }
   };
 
-  // Configure the React plugin with our Babel plugin
-  const reactPlugin = react({
-    ...reactOptions,
-    babel: {
-      ...(reactOptions.babel as Record<string, unknown> | undefined),
-      plugins: [
-        ...((reactOptions.babel as any)?.plugins ?? []),
-        [babelPluginVisualEdit, { exclude, attributeSourceLocation, attributeDynamicContent }],
-      ],
-    },
-  });
-
-  return [editorPlugin, reactPlugin];
+  return [plugin];
 }
 
 // Default export
@@ -161,7 +184,6 @@ export { babelPluginVisualEdit };
 export type {
   VisualEditOptions,
   VisualEditConfig,
-  VisualEditPluginReturn,
   VisualEditRequestData,
   VisualEditRequestMessage,
   VisualEditResponseMessage,

@@ -11,11 +11,6 @@ export interface VisualEditOptions {
   exclude?: RegExp[];
 
   /**
-   * Additional options to pass to @vitejs/plugin-react
-   */
-  react?: Record<string, unknown>;
-
-  /**
    * Save toggle state to localStorage
    * @default true
    */

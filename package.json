@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-visual-edit",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A Vite plugin for visual editing of React components. Highlights elements, shows source locations, and enables in-browser content editing with iframe communication support.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -44,17 +44,20 @@
   },
   "homepage": "https://github.com/Joinguyen/vite-plugin-visual-edit#readme",
   "peerDependencies": {
-    "vite": ">=4.0.0",
-    "@vitejs/plugin-react": ">=4.0.0"
+    "@vitejs/plugin-react": ">=4.0.0",
+    "vite": ">=4.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "@vitejs/plugin-react": "^4.2.0",
     "tsup": "^8.0.0",
     "typescript": "^5.3.0",
-    "vite": "^5.0.0",
-    "@vitejs/plugin-react": "^4.2.0"
+    "vite": "^5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@babel/core": "^7.28.6"
   }
 }

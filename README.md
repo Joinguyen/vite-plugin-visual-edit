@@ -34,7 +34,7 @@ export default defineConfig({
 });
 ```
 
-That's it! The plugin includes `@vitejs/plugin-react` with the necessary Babel configuration.
+That's it! The plugin works alongside `@vitejs/plugin-react` to add visual editing capabilities.
 
 ## Configuration
 
@@ -47,9 +47,6 @@ export default defineConfig({
     ...visualEdit({
       // Babel exclude patterns - files matching won't get source attributes
       exclude: [/node_modules/, /components\/ui\//],
-
-      // Pass additional options to @vitejs/plugin-react
-      react: {},
 
       // Save toggle state to localStorage (default: true)
       persistState: true,
