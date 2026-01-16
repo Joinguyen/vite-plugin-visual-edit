@@ -22,6 +22,7 @@ export function babelPluginVisualEdit({ types }: { types: typeof t }): PluginObj
         const options = state.opts || {};
         const excludePatterns = options.exclude || [/node_modules/, /components\/ui\//];
 
+
         const shouldExclude = excludePatterns.some((pattern) => pattern.test(normalizedPath));
         if (shouldExclude) {
           return;
@@ -48,8 +49,12 @@ export function babelPluginVisualEdit({ types }: { types: typeof t }): PluginObj
 
           const openingElement = path.node.openingElement;
 
+          const options = state.opts || {};
+          const attributeSourceLocation = options.attributeSourceLocation || 'data-source-location';
+          const attributeDynamicContent = options.attributeDynamicContent || 'data-dynamic-content';
+
           const hasSourceLocation = openingElement.attributes.some(
-            (attr) => types.isJSXAttribute(attr) && attr.name?.name === 'data-source-location'
+            (attr) => types.isJSXAttribute(attr) && attr.name?.name === attributeSourceLocation
           );
 
           if (hasSourceLocation) {
@@ -68,14 +73,14 @@ export function babelPluginVisualEdit({ types }: { types: typeof t }): PluginObj
 
           openingElement.attributes.push(
             types.jsxAttribute(
-              types.jsxIdentifier('data-source-location'),
+              types.jsxIdentifier(attributeSourceLocation),
               types.stringLiteral(sourceLocation)
             )
           );
 
           openingElement.attributes.push(
             types.jsxAttribute(
-              types.jsxIdentifier('data-dynamic-content'),
+              types.jsxIdentifier(attributeDynamicContent),
               types.stringLiteral(hasDynamicContent ? 'true' : 'false')
             )
           );

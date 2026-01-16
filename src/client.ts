@@ -23,6 +23,9 @@ export function generateClientScript(config: VisualEditConfig): string {
   }
   
   const HC=CONFIG.colorHover,SC=CONFIG.colorSelected,SB=CONFIG.colorSubmit,LC='#fff';
+  const ATTR_LOC = CONFIG.attributeSourceLocation; 
+  // We don't necessarily need dynamic content attribute in client for now, but good to have in CONFIG if needed later.
+  
   let aH=[],aL=[],cL=null,sL=null,sH=[],sLb=[],aF=null,cE=null,iS=false,aSB=null,sT=null,mH=null,init=false;
   
   function cHl(el,sel=false){
@@ -101,17 +104,17 @@ export function generateClientScript(config: VisualEditConfig): string {
     if(fr.bottom>innerHeight)f.style.top=\`\${r.top+sy-fr.height-8}px\`;
   }
   
-  function cSH(loc){sH.forEach(h=>h.remove());sLb.forEach(l=>l.remove());sH=[];sLb=[];document.querySelectorAll(\`[data-source-location="\${loc}"]\`).forEach(e=>{const{r,sx,sy}=cHl(e,true);cLb(e,r,sx,sy,true)})}
-  function hlE(loc){if(cL===loc)return;aH.forEach(h=>h.remove());aL.forEach(l=>l.remove());aH=[];aL=[];cL=loc;if(loc===sL)return;document.querySelectorAll(\`[data-source-location="\${loc}"]\`).forEach(e=>{const{r,sx,sy}=cHl(e,false);cLb(e,r,sx,sy,false)})}
+  function cSH(loc){sH.forEach(h=>h.remove());sLb.forEach(l=>l.remove());sH=[];sLb=[];document.querySelectorAll(\`[\${ATTR_LOC}="\${loc}"]\`).forEach(e=>{const{r,sx,sy}=cHl(e,true);cLb(e,r,sx,sy,true)})}
+  function hlE(loc){if(cL===loc)return;aH.forEach(h=>h.remove());aL.forEach(l=>l.remove());aH=[];aL=[];cL=loc;if(loc===sL)return;document.querySelectorAll(\`[\${ATTR_LOC}="\${loc}"]\`).forEach(e=>{const{r,sx,sy}=cHl(e,false);cLb(e,r,sx,sy,false)})}
   
-  function mO(e){if(!enabled)return;const t=e.target;if(t.closest('.ve-h,.ve-hs,.ve-l,.ve-ls,.ve-f,.ve-badge'))return;const el=t.closest('[data-source-location]');if(el)hlE(el.getAttribute('data-source-location'))}
-  function mOut(e){if(!enabled)return;const rt=e.relatedTarget;if(rt){if(rt.closest?.('.ve-h,.ve-hs,.ve-l,.ve-ls,.ve-f,.ve-badge'))return;const el=rt.closest?.('[data-source-location]');if(el&&el.getAttribute('data-source-location')===cL)return}clrH()}
-  function clk(e){if(!enabled)return;const t=e.target;if(t.closest('.ve-f,.ve-badge'))return;const el=t.closest('[data-source-location]');if(el){const loc=el.getAttribute('data-source-location');if(loc===sL)return;e.preventDefault();e.stopPropagation();if(aF){aF.remove();aF=null}sL=loc;cE=el;clrH();cSH(loc);cIF(el)}else if(sL)clsF()}
+  function mO(e){if(!enabled)return;const t=e.target;if(t.closest('.ve-h,.ve-hs,.ve-l,.ve-ls,.ve-f,.ve-badge'))return;const el=t.closest(\`[\${ATTR_LOC}]\`);if(el)hlE(el.getAttribute(ATTR_LOC))}
+  function mOut(e){if(!enabled)return;const rt=e.relatedTarget;if(rt){if(rt.closest?.('.ve-h,.ve-hs,.ve-l,.ve-ls,.ve-f,.ve-badge'))return;const el=rt.closest?.(\`[\${ATTR_LOC}]\`);if(el&&el.getAttribute(ATTR_LOC)===cL)return}clrH()}
+  function clk(e){if(!enabled)return;const t=e.target;if(t.closest('.ve-f,.ve-badge'))return;const el=t.closest(\`[\${ATTR_LOC}]\`);if(el){const loc=el.getAttribute(ATTR_LOC);if(loc===sL)return;e.preventDefault();e.stopPropagation();if(aF){aF.remove();aF=null}sL=loc;cE=el;clrH();cSH(loc);cIF(el)}else if(sL)clsF()}
   
   function upd(){
     if(!enabled)return;
-    if(cL){const els=document.querySelectorAll(\`[data-source-location="\${cL}"]\`);aH.forEach((h,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();h.style.top=\`\${r.top+scrollY}px\`;h.style.left=\`\${r.left+scrollX}px\`;h.style.width=\`\${r.width}px\`;h.style.height=\`\${r.height}px\`});aL.forEach((l,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();l.style.top=r.top<20?\`\${r.top+scrollY+2}px\`:\`\${r.top+scrollY-20}px\`;l.style.left=\`\${r.left+scrollX}px\`})}
-    if(sL){const els=document.querySelectorAll(\`[data-source-location="\${sL}"]\`);sH.forEach((h,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();h.style.top=\`\${r.top+scrollY}px\`;h.style.left=\`\${r.left+scrollX}px\`;h.style.width=\`\${r.width}px\`;h.style.height=\`\${r.height}px\`});sLb.forEach((l,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();l.style.top=r.top<20?\`\${r.top+scrollY+2}px\`:\`\${r.top+scrollY-20}px\`;l.style.left=\`\${r.left+scrollX}px\`});if(aF&&cE){const r=cE.getBoundingClientRect(),fr=aF.getBoundingClientRect();let t=r.bottom+scrollY+8;if(r.bottom+fr.height+8>innerHeight)t=r.top+scrollY-fr.height-8;aF.style.top=\`\${t}px\`;aF.style.left=\`\${Math.min(r.left+scrollX,innerWidth-fr.width-16)}px\`}}
+    if(cL){const els=document.querySelectorAll(\`[\${ATTR_LOC}="\${cL}"]\`);aH.forEach((h,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();h.style.top=\`\${r.top+scrollY}px\`;h.style.left=\`\${r.left+scrollX}px\`;h.style.width=\`\${r.width}px\`;h.style.height=\`\${r.height}px\`});aL.forEach((l,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();l.style.top=r.top<20?\`\${r.top+scrollY+2}px\`:\`\${r.top+scrollY-20}px\`;l.style.left=\`\${r.left+scrollX}px\`})}
+    if(sL){const els=document.querySelectorAll(\`[\${ATTR_LOC}="\${sL}"]\`);sH.forEach((h,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();h.style.top=\`\${r.top+scrollY}px\`;h.style.left=\`\${r.left+scrollX}px\`;h.style.width=\`\${r.width}px\`;h.style.height=\`\${r.height}px\`});sLb.forEach((l,i)=>{const e=els[i];if(!e)return;const r=e.getBoundingClientRect();l.style.top=r.top<20?\`\${r.top+scrollY+2}px\`:\`\${r.top+scrollY-20}px\`;l.style.left=\`\${r.left+scrollX}px\`});if(aF&&cE){const r=cE.getBoundingClientRect(),fr=aF.getBoundingClientRect();let t=r.bottom+scrollY+8;if(r.bottom+fr.height+8>innerHeight)t=r.top+scrollY-fr.height-8;aF.style.top=\`\${t}px\`;aF.style.left=\`\${Math.min(r.left+scrollX,innerWidth-fr.width-16)}px\`}}
   }
   
   function setEnabled(val) {

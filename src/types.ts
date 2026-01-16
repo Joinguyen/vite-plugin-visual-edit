@@ -80,6 +80,17 @@ export interface VisualEditOptions {
    * @default '#10b981' (green-500)
    */
   colorSubmit?: string;
+  /**
+   * Attribute name for source location
+   * @default 'data-source-location'
+   */
+  attributeSourceLocation?: string;
+
+  /**
+   * Attribute name for dynamic content
+   * @default 'data-dynamic-content'
+   */
+  attributeDynamicContent?: string;
 }
 
 /**
@@ -153,6 +164,8 @@ export interface VisualEditConfig {
   colorHover: string;
   colorSelected: string;
   colorSubmit: string;
+  attributeSourceLocation: string;
+  attributeDynamicContent: string;
 }
 
 /**
@@ -162,6 +175,8 @@ export interface BabelPluginState {
   filename?: string;
   opts?: {
     exclude?: RegExp[];
+    attributeSourceLocation?: string;
+    attributeDynamicContent?: string;
   };
   get: (key: string) => string | undefined;
   set: (key: string, value: string) => void;

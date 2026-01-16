@@ -41,6 +41,8 @@ const DEFAULT_OPTIONS: Required<Omit<VisualEditOptions, 'exclude' | 'react'>> & 
   colorHover: '#3b82f6',
   colorSelected: '#10b981',
   colorSubmit: '#10b981',
+  attributeSourceLocation: 'data-source-location',
+  attributeDynamicContent: 'data-dynamic-content',
 };
 
 /**
@@ -92,6 +94,8 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
     colorHover,
     colorSelected,
     colorSubmit,
+    attributeSourceLocation,
+    attributeDynamicContent,
   } = resolvedOptions;
 
   let isDev = false;
@@ -109,6 +113,8 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
     colorHover,
     colorSelected,
     colorSubmit,
+    attributeSourceLocation,
+    attributeDynamicContent,
   };
 
   // Main Vite plugin for injecting the client-side script
@@ -137,7 +143,7 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
       ...(reactOptions.babel as Record<string, unknown> | undefined),
       plugins: [
         ...((reactOptions.babel as Record<string, unknown[]> | undefined)?.plugins ?? []),
-        [babelPluginVisualEdit, { exclude }],
+        [babelPluginVisualEdit, { exclude, attributeSourceLocation, attributeDynamicContent }],
       ],
     },
   });

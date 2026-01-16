@@ -79,6 +79,10 @@ export default defineConfig({
       colorHover: "#3b82f6", // Hover highlight border color (blue-500)
       colorSelected: "#10b981", // Selected element border color (green-500)
       colorSubmit: "#10b981", // Submit button color (green-500)
+
+      // Customizable attribute names (defaults shown)
+      attributeSourceLocation: "data-source-location",
+      attributeDynamicContent: "data-dynamic-content",
     }),
   ],
 });
@@ -96,8 +100,8 @@ The plugin's Babel transformer adds two attributes to every JSX element:
 </div>
 ```
 
-- `data-source-location` - Format: `path/to/file:line:column`
-- `data-dynamic-content` - `"true"` if element contains dynamic expressions
+- `data-source-location` (configurable via `attributeSourceLocation`) - Format: `path/to/file:line:column`
+- `data-dynamic-content` (configurable via `attributeDynamicContent`) - `"true"` if element contains dynamic expressions
 
 ### Toggle On/Off
 
