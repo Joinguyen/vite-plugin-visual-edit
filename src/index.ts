@@ -142,7 +142,7 @@ export function visualEdit(options: VisualEditOptions = {}): VisualEditPluginRet
     babel: {
       ...(reactOptions.babel as Record<string, unknown> | undefined),
       plugins: [
-        ...((reactOptions.babel as Record<string, unknown[]> | undefined)?.plugins ?? []),
+        ...((reactOptions.babel as any)?.plugins ?? []),
         [babelPluginVisualEdit, { exclude, attributeSourceLocation, attributeDynamicContent }],
       ],
     },
